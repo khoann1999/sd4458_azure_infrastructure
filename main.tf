@@ -1,11 +1,11 @@
-# Generate random resource group name
-resource "random_pet" "rg_name" {
-  prefix = var.resource_group_name_prefix
-}
+# # Generate random resource group name
+# resource "random_pet" "rg_name" {
+#   prefix = var.resource_group_name_prefix
+# }
 
 resource "azurerm_resource_group" "rg" {
   location = var.resource_group_location
-  name     = random_pet.rg_name.id
+  name     =  "khoann"+var.resource_group_name_prefix
 }
 
 resource "random_pet" "azurerm_kubernetes_cluster_name" {
@@ -16,7 +16,7 @@ resource "random_pet" "azurerm_kubernetes_cluster_dns_prefix" {
   prefix = "dns"
 }
 
-resource "azurerm_kubernetes_cluster" "k8s" {
+resource "azurerm_kubernetes_cluster" "aks" {
   location            = azurerm_resource_group.rg.location
   name                = random_pet.azurerm_kubernetes_cluster_name.id
   resource_group_name = azurerm_resource_group.rg.name
@@ -46,10 +46,16 @@ resource "azurerm_kubernetes_cluster" "k8s" {
 
 }  
 
-# resource "azurerm_container_registry" "acr_demo" {
-#   name                = "Khoanncontainerregistry"
-#   resource_group_name = azurerm_resource_group.rg.name
-#   location            = azurerm_resource_group.rg.location
-#   sku                 = "Standard"
-#   admin_enabled       = false
-# }
+resource "azurerm_container_registry" "acr" {
+  name                = "Khoanncontainerregistry"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  sku                 = "Standard"
+  admin_enabled       = false
+}
+
+resource "azurerm_role_assignment" "aks_to_acr_role" {
+  scope                = azurerm_container_registry.acr.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
+}
