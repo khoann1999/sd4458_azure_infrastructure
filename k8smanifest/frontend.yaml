@@ -20,6 +20,7 @@ spec:
   selector:
     matchLabels:
       app: frontend
+  revisionHistoryLimit: 1
   replicas: 3
   template:
     metadata:
