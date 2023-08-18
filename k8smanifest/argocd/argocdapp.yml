@@ -6,12 +6,11 @@ metadata:
   # You'll usually want to add your resources to the argocd namespace.
   namespace: argocd
   annotations:
-    argocd-image-updater.argoproj.io/image-list: backend=khoanncontainerregistry.azurecr.io/backend
-    argocd-image-updater.argoproj.io/image-list: frontend=khoanncontainerregistry.azurecr.io/frontend
+    argocd-image-updater.argoproj.io/image-list: app=khoanncontainerregistry.azurecr.io/backend, frontend=khoanncontainerregistry.azurecr.io/frontend
     argocd-image-updater.argoproj.io/backend.update-strategy: latest
     argocd-image-updater.argoproj.io/frontend.update-strategy: latest
     argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/git-creds       
-    argocd-image-updater.argoproj.io/git-branch: master      
+    argocd-image-updater.argoproj.io/git-branch: main      
     argocd-image-updater.argoproj.io/write-back-target: kustomization:/k8smanifest
     argocd-image-updater.argoproj.io/backend.force-update: "true"
     argocd-image-updater.argoproj.io/frontend.force-update: "true"
@@ -25,7 +24,7 @@ spec:
 
   # Source of the application manifests
   source:
-    repoURL: https://github.com/khoann1999/sd4458_msa
+    repoURL: https://github.com/khoann1999/sd4458_azure_infrastructure
     targetRevision: HEAD
     path: ./k8smanifest
    
