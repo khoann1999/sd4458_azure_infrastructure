@@ -1,0 +1,66 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+resources:
+- repo: self
+variables:
+- group: dev-var-group
+- name: vmImageName
+  value: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: PublishPipelineArtifact@1
+      inputs:
+        artifactName: 'manifests'
+        path: '$(Build.SourcesDirectory)'
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy job
+    environment: 'test'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: 'manifests'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          - script: |
+              ls -la $(System.ArtifactsDirectory)/
+              cat $(System.ArtifactsDirectory)/k8smanifest/backend.yaml
+              cat $(System.ArtifactsDirectory)/k8smanifest/frontend.yaml
+              cat $(System.ArtifactsDirectory)/k8smanifest/ingress.yml
+              cat $(System.ArtifactsDirectory)/k8smanifest/mongodb.yaml
+              
+          - task: KubernetesManifest@1
+            inputs:
+              action: deploy
+              connectionType: 'azureResourceManager'
+              azureSubscriptionConnection: 'Free Trial(f9a5fd9d-72e0-4364-8d3b-360046e6fa28)'
+              azureResourceGroup: 'rg-engaged-robin'
+              kubernetesCluster: 'cluster-driven-quail'
+              useClusterAdmin: true
+              manifests: |
+                $(System.ArtifactsDirectory)/k8smanifest/backend.yaml
+                $(System.ArtifactsDirectory)/k8smanifest/frontend.yaml
+                $(System.ArtifactsDirectory)/k8smanifest/mongodb.yaml
+                $(System.ArtifactsDirectory)/k8smanifest/ingress.yml
+
