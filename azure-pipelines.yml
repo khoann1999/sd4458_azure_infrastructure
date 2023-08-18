@@ -54,9 +54,9 @@ stages:
             inputs:
               action: deploy
               connectionType: 'azureResourceManager'
-              azureSubscriptionConnection: 'Free Trial(f9a5fd9d-72e0-4364-8d3b-360046e6fa28)'
-              azureResourceGroup: 'rg-engaged-robin'
-              kubernetesCluster: 'cluster-driven-quail'
+              azureSubscriptionConnection: '$(azureSubscriptionConnection)'
+              azureResourceGroup: '$(azureResourceGroup)'
+              kubernetesCluster: '$(kubernetesCluster)'
               useClusterAdmin: true
               manifests: |
                 $(System.ArtifactsDirectory)/k8smanifest/backend.yaml

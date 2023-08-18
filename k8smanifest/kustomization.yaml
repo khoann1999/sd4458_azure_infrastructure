@@ -3,6 +3,8 @@ kind: Kustomization
 resources:
 - backend.yaml
 - frontend.yaml
+- mongodb.yaml
+- ingress.yml
 images:
 - name: khoanncontainerregistry.azurecr.io/backend
   newTag: "724"
