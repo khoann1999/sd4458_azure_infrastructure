@@ -1,0 +1,46 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: multi-apps
+  # You'll usually want to add your resources to the argocd namespace.
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: backend=khoanncontainerregistry.azurecr.io/backend
+    argocd-image-updater.argoproj.io/image-list: frontend=khoanncontainerregistry.azurecr.io/frontend
+    argocd-image-updater.argoproj.io/backend.update-strategy: latest
+    argocd-image-updater.argoproj.io/frontend.update-strategy: latest
+    argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/git-creds       
+    argocd-image-updater.argoproj.io/git-branch: master      
+    argocd-image-updater.argoproj.io/write-back-target: kustomization:/k8smanifest
+    argocd-image-updater.argoproj.io/backend.force-update: "true"
+    argocd-image-updater.argoproj.io/frontend.force-update: "true"
+
+  # Add a this finalizer ONLY if you want these to cascade delete.
+  # finalizers:
+  #   - resources-finalizer.argocd.argoproj.io
+spec:
+  # The project the application belongs to.
+  project: practical-devops
+
+  # Source of the application manifests
+  source:
+    repoURL: https://github.com/khoann1999/sd4458_msa
+    targetRevision: HEAD
+    path: ./k8smanifest
+   
+    # directory
+    directory:
+      recurse: false
+  # Destination cluster and namespace to deploy the application
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  # Sync policy
+  syncPolicy:
+    automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+      prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
+      selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
+      allowEmpty: false # Allows deleting all application resources during automatic syncing ( false by default ).
+
