@@ -9,15 +9,15 @@ resource "azurerm_resource_group" "rg" {
 }
 
 resource "random_pet" "azurerm_kubernetes_cluster_name" {
-  prefix = "khoann_cluster"
+  prefix = "cluster-khoann"
 }
 
 resource "random_pet" "azurerm_kubernetes_cluster_dns_prefix" {
-  prefix = "dns"
+  prefix = "dns-khoann"
 }
 
 resource "random_pet" "azurerm_log_analytics_workspace" {
-  prefix = "dns"
+  prefix = "log-khoann"
 }
 
 # create azurerm_log_analytics_workspace for data source to import gafana
@@ -33,6 +33,11 @@ resource "azurerm_kubernetes_cluster" "k8s" {
   name                = random_pet.azurerm_kubernetes_cluster_name.id
   resource_group_name = azurerm_resource_group.rg.name
   dns_prefix          = random_pet.azurerm_kubernetes_cluster_dns_prefix.id
+
+  // enable azurerm_log_analytics_workspace
+  oms_agent {
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.insights.id
+  }
 
   identity {
     type = "SystemAssigned"
@@ -54,14 +59,6 @@ resource "azurerm_kubernetes_cluster" "k8s" {
     network_plugin    = "kubenet"
     load_balancer_sku = "standard"
   }
-  // enable azurerm_log_analytics_workspace
-  addon_profile {
-    azure_policy { enabled = true }
-    oms_agent {
-      enabled                    = true
-      log_analytics_workspace_id = azurerm_log_analytics_workspace.insights.id
-    }
-  }
 }
 //Create acr
 resource "azurerm_container_registry" "acr" {
@@ -69,7 +66,7 @@ resource "azurerm_container_registry" "acr" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   sku                 = "Standard"
-  admin_enabled       = false
+  admin_enabled       = true
 }
 
 //Create role to allow aks accesss to acr 
