@@ -7,6 +7,6 @@ resources:
 - ingress.yml
 images:
 - name: khoanncontainerregistry.azurecr.io/backend
-  newTag: "724"
+  newTag: "737"
 - name: khoanncontainerregistry.azurecr.io/frontend
-  newTag: "723"
+  newTag: "737"
