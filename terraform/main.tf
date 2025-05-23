@@ -20,6 +20,21 @@ resource "random_pet" "azurerm_log_analytics_workspace" {
   prefix = "log-khoann"
 }
 
+resource "azurerm_log_analytics_solution" "container_insights" {
+  solution_name         = "ContainerInsights"
+  location              = azurerm_resource_group.rg.location
+  resource_group_name   = azurerm_resource_group.rg.name
+  workspace_resource_id = azurerm_log_analytics_workspace.insights.id
+  workspace_name        = azurerm_log_analytics_workspace.insights.name
+
+  plan {
+    publisher = "Microsoft"
+    product   = "OMSGallery/ContainerInsights"
+  }
+
+
+}
+
 # create azurerm_log_analytics_workspace for data source to import gafana
 resource "azurerm_log_analytics_workspace" "insights" {
   name                = random_pet.azurerm_kubernetes_cluster_name.id
@@ -33,7 +48,6 @@ resource "azurerm_kubernetes_cluster" "k8s" {
   name                = random_pet.azurerm_kubernetes_cluster_name.id
   resource_group_name = azurerm_resource_group.rg.name
   dns_prefix          = random_pet.azurerm_kubernetes_cluster_dns_prefix.id
-
   // enable azurerm_log_analytics_workspace
   oms_agent {
     log_analytics_workspace_id = azurerm_log_analytics_workspace.insights.id
@@ -52,7 +66,7 @@ resource "azurerm_kubernetes_cluster" "k8s" {
     admin_username = var.username
 
     ssh_key {
-      key_data = jsondecode(azapi_resource_action.ssh_public_key_gen.output).publicKey
+      key_data = azapi_resource_action.ssh_public_key_gen.output.publicKey
     }
   }
   network_profile {
@@ -76,3 +90,10 @@ resource "azurerm_role_assignment" "aks_to_acr_role" {
   principal_id                     = azurerm_kubernetes_cluster.k8s.kubelet_identity[0].object_id
   skip_service_principal_aad_check = true
 }
+resource "azurerm_network_watcher" "example" {
+  name                = "production-nwwatcher"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+
+}
+
